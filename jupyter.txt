@@ -1,0 +1,14 @@
+ssh vassm@deep2.inf.u-szeged.hu
+
+screen -S [name]
+kilépés: ctrl+a d
+visszalépés: screen -r [name]
+kill: belépés, majd ctrl+a k
+
+jupyter notebook --port 9999
+
+ssh -v -L 8887:localhost:8887 vassm@deep2.inf.u-szeged.hu
+
+http://localhost:9999
+
+how to install conda environment to jupyter
