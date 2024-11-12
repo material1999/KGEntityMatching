@@ -1,10 +1,12 @@
 import pandas as pd
 
-graphs = ["stexpanded", "memoryalpha"]
+# graphs = ["stexpanded", "memoryalpha"]
+graphs = ["swtor", "swg", "memorybeta", "marvel", "mcu", "starwars"]
 
 for graph in graphs:
 
-    df = pd.read_csv("data/filtered_triples_weighted/" + graph + ".triples", delimiter='###', header=None)
+    df = pd.read_csv("data/filtered_triples_weighted/" + graph + ".triples", delimiter='###', header=None,
+                     engine='python')
 
     with open("data/other/" + graph + ".txt", 'w') as f:
         f.write("# Directed Node Graph \n")
