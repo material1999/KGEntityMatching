@@ -1,11 +1,11 @@
 import pandas as pd
 
 # graphs = ["stexpanded", "memoryalpha"]
-graphs = ["swtor", "swg", "memorybeta", "marvel", "mcu", "starwars"]
+graphs = ["stexpanded", "memoryalpha", "swtor", "swg", "memorybeta", "marvel", "mcu", "starwars"]
 
 for graph in graphs:
 
-    df = pd.read_csv("data/filtered_triples_weighted/" + graph + ".triples", delimiter='###', header=None,
+    df = pd.read_csv("data/filtered_triples_new/" + graph + ".triples", delimiter='###', header=None,
                      engine='python')
 
     with open("data/other/" + graph + ".txt", 'w') as f:
@@ -16,3 +16,5 @@ for graph in graphs:
 
         for _, row in df.iterrows():
             f.write(f"{row[0]}\t{row[1]}\n")
+
+    print("Finished " + graph)
