@@ -5,3 +5,5 @@ data
 results
 snap-master
 references
+gptcall.ipynb
+top10embedpairs.ipynb
