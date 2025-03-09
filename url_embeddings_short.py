@@ -9,8 +9,8 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 gpu = False
 bge_large = "BAAI/bge-large-en-v1.5"
 
-graphs = ["stexpanded"]
-# graphs = ["stexpanded", "memoryalpha", "swtor", "swg", "memorybeta", "mcu", "starwars", "marvel"]
+# graphs = ["stexpanded"]
+graphs = ["memoryalpha", "swtor", "swg", "memorybeta", "mcu", "starwars", "marvel"]
 graph_path = "data/triples_v2/"
 embeddings_output_path = "results/url_embeddings_short/"
 
