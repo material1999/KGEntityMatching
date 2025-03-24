@@ -5,10 +5,10 @@ import networkx as nx
 import pandas as pd
 #%%
 graph = "memoryalpha"
-communities_file = "results/communities_leiden/" + graph + "/level_0.txt"
+communities_file = "results/communities_bigclam_new/" + graph + "_10000.txt"
 graph_file = "data/filtered_triples/" + graph + ".triples"
 mappings_file = "data/triples_v2/" + str(graph) + "_mapping.json"
-top_betweenness_file = "results/_top_betweenness/" + graph + ".json"
+top_betweenness_file = "results/top_betweenness_bigclam/" + graph + ".json"
 # k = 1000
 #%%
 graph_df = pd.read_csv(graph_file, sep="###", engine="python", header=None)
@@ -22,7 +22,8 @@ with open(communities_file, 'r') as communities_input, open(mappings_file, "r") 
     mappings = json.load(mappings_input)
     results = []
     for line in tqdm(communities_input):
-        entities = [int(e) for e in line.strip().split(" ")]
+        # entities = [int(e) for e in line.strip().split(" ")]
+        entities = [int(e) for e in line.strip().split("\t")]
         G = G_nx.subgraph(entities)
         # if len(G.nodes) > k:
         #     betweenness = nx.betweenness_centrality(G, k=k)
