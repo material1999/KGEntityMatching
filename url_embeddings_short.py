@@ -68,8 +68,6 @@ def write_embeddings(graph_name, embeddings, extra_identifier=""):
 selected_embedder = bge_large
 print("Model:", selected_embedder)
 
-
-
 for g in graphs:
     print(g)
     mappings = get_mappings(g)
