@@ -10,7 +10,8 @@ bge_large = "BAAI/bge-large-en-v1.5"
 
 # graphs = ["stexpanded"]
 # graphs = ["stexpanded", "memoryalpha"]
-graphs = ["swtor", "swg", "memorybeta", "mcu", "starwars", "marvel"]
+# graphs = ["swtor", "swg", "memorybeta", "mcu", "starwars", "marvel"]
+graphs = ["starwars", "marvel"]
 mappings_path = "_input/mappings/"
 dogtags_path = "_input/dogtags_mate/"
 embeddings_output_path = "_input/edgetype_embeddings/dogtag_bgelarge/"
