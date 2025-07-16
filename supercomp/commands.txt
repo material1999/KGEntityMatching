@@ -1,6 +1,12 @@
 ##### TEST AVAILABLE RESOURCES #####
 srun --test-only --nodes=1 --ntasks-per-node=1 --cpus-per-task=16 --mem-per-cpu=4G --gres=gpu:4
 
+##### SHOW NODES #####
+scontrol show nodes
+
+##### CHECK GPU USAGE #####
+ssh <NODENAME> nvidia-smi
+
 ##### CHECK SCHEDULED AND RUNNING TASKS #####
 squeue
 
