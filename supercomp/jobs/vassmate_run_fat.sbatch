@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=vassmate_test
+#SBATCH --job-name=vassmate_fat
 #SBATCH --output=logs/vassmate_%j.out
 #SBATCH --error=logs/vassmate_%j.err
 #SBATCH --partition=fat

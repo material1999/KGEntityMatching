@@ -1,14 +1,14 @@
 #!/bin/bash
 
-#SBATCH --job-name=vassmate_gpu
+#SBATCH --job-name=vassmate_test
 #SBATCH --output=logs/vassmate_%j.out
 #SBATCH --error=logs/vassmate_%j.err
-#SBATCH --partition=compute
+#SBATCH --partition=fat
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=16
 #SBATCH --mem-per-cpu=4G
-#SBATCH --gres=gpu:4
+#SBATCH --gres=gpu:8
 
 echo "Job Started at $(date)!"
 

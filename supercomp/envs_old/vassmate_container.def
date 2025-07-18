@@ -23,3 +23,10 @@ python3 -m pip install --upgrade pip
 
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 pip install transformers sentence-transformers
+
+%files
+_pipeline_node_reranker.py /_pipeline_node_reranker.py
+
+%runscript
+echo "Container Started!"
+python3 /_pipeline_node_reranker.py
