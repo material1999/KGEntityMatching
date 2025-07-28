@@ -4,8 +4,8 @@ import torch
 from sentence_transformers import util
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 #%%
-small = "stexpanded"
-big = "memoryalpha"
+small = "swtor"
+big = "starwars"
 embeddings = "dogtag_bgelarge"
 top = 100
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

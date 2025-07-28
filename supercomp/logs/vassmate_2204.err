@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/home/vassmate/KGEntityMatching/memoryalpha_memorybeta.py", line 60, in <module>
+    tensor_small = torch.Tensor(node_embeddings_small_list, device=device)
+RuntimeError: legacy constructor expects device type: cpu but device type: cuda was passed
