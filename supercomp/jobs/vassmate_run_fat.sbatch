@@ -12,6 +12,6 @@
 
 echo "Job Started at $(date)!"
 
-apptainer run --nv --bind /home/vassmate/KGEntityMatching/_input:/hdd /home/vassmate/KGEntityMatching/envs/vassmate_container.sif
+apptainer run --nv --bind /home/vassmate/KGEntityMatching/_input:/hdd /home/vassmate/KGEntityMatching/envs/vassmate_container.sif python3 /home/vassmate/KGEntityMatching/_pipeline_node_reranker.py
 
 echo "Job Finished at $(date)!"

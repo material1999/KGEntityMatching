@@ -1,9 +1,9 @@
 #!/bin/bash
 
-#SBATCH --job-name=vassmate_gpu
+#SBATCH --job-name=vass_swg_starwars
 #SBATCH --output=logs/vassmate_%j.out
 #SBATCH --error=logs/vassmate_%j.err
-#SBATCH --partition=compute
+#SBATCH --partition=all
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=16
@@ -12,6 +12,6 @@
 
 echo "Job Started at $(date)!"
 
-apptainer run --nv --bind /home/vassmate/KGEntityMatching/_input:/hdd /home/vassmate/KGEntityMatching/envs/vassmate_container.sif python3 /home/vassmate/KGEntityMatching/_pipeline_node_reranker.py
+apptainer run --nv --bind /home/vassmate/KGEntityMatching/_input:/hdd /home/vassmate/KGEntityMatching/envs/vassmate_container.sif python3 /home/vassmate/KGEntityMatching/swg_starwars.py
 
 echo "Job Finished at $(date)!"
