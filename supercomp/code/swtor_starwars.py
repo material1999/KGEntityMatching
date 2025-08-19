@@ -19,7 +19,9 @@ node_embeddings_big_file = "/hdd/node_embeddings/" + embeddings + "/" + big + ".
 dogtags_small_file = "/hdd/dogtags/" + small + ".json"
 dogtags_big_file = "/hdd/dogtags/" + big + ".json"
 
-output_file = "/hdd/found_pairs/" + small + "-" + big + ".txt"
+exact_match_file = "./_input/exact_match/" + small + "-" + big + ".json"
+
+output_file = "/hdd/found_pairs_em/" + small + "-" + big + ".txt"
 #%%
 with open(mappings_file_small) as file:
     mappings_small = {str(v): k for k, v in json.load(file).items()}
@@ -42,6 +44,9 @@ with open(dogtags_small_file) as df:
 
 with open(dogtags_big_file) as df:
     dogtags_big = json.load(df)
+
+with open(exact_match_file) as file:
+    exact_match = json.load(file)
 #%%
 node_embeddings_small_list = list()
 node_ids_small_list = list()
@@ -56,6 +61,9 @@ for k, v in node_embeddings_small.items():
 for k, v in node_embeddings_big.items():
     node_ids_big_list.append(k)
     node_embeddings_big_list.append(v)
+
+with open(exact_match_file) as file:
+    exact_match = json.load(file)
 #%%
 tensor_small = torch.Tensor(node_embeddings_small_list).to(device)
 tensor_big = torch.Tensor(node_embeddings_big_list).to(device)
@@ -67,6 +75,16 @@ for idx, (node_id, order) in enumerate(zip(node_ids_small_list, node_order)):
     for item in order:
         items_list.append((node_ids_big_list[item['corpus_id']], item['score']))
     top_dict[node_id] = items_list
+#%%
+for em in exact_match:
+    if str(em[0]) in top_dict:
+        bool_append = True
+        for item in top_dict[str(em[0])]:
+            if item[0] == str(em[1]):
+                bool_append = False
+                break
+        if bool_append:
+            top_dict[str(em[0])].append((str(em[1]), 1.0))
 #%%
 tokenizer = AutoTokenizer.from_pretrained('BAAI/bge-reranker-large')
 model = AutoModelForSequenceClassification.from_pretrained('BAAI/bge-reranker-large')
