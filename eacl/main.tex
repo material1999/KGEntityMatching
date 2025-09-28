@@ -1,0 +1,198 @@
+\documentclass[11pt]{article}
+
+% review - anonymous, line numbers
+% preprint - how it would look
+% final - camera ready version
+\usepackage[preprint]{acl}
+
+\usepackage{times}
+\usepackage{latexsym}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{microtype}
+\usepackage{inconsolata}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{enumitem}
+
+\setlength\titlebox{7.5cm}
+
+\title{DogMa: A Dogtag-Based Knowledge Graph Entity Matching Framework}
+
+\author{
+    Péter Kardos \\
+    University of Szeged \\
+    Hungary \\
+    \texttt{kardos@inf.u-szeged.hu} \\
+    \And
+    Máté Vass \\
+    University of Szeged \\
+    Hungary \\
+    \texttt{vassmate@inf.u-szeged.hu} \\
+    \AND
+    Richárd Farkas \\
+    University of Szeged \\
+    Hungary \\
+    \texttt{rfarkas@inf.u-szeged.hu} \\
+    \And
+    Miklós Krész \\
+    InnoRenew CoE \\
+    University of Primorska \\
+    Slovenia \\
+    \texttt{miklos.kresz@innorenew.eu} \\
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+
+\colorbox{pink}{TODO}
+
+\end{abstract}
+
+\section{Introduction}
+
+Knowledge Graphs (KGs) are semi-structured knowledge bases in which nodes are typically associated with long textual descriptions, while the textual labels of edges semantically characterize the relationships among nodes. Processing KGs therefore requires specialized methodologies: standard graph mining techniques, such as Graph Neural Networks \cite{}, generally ignore textual information, whereas natural language processing (NLP) methods, including Retriever-Augmented Generation (RAG), are designed for purely textual data.
+
+We study the task of \emph{Knowledge Graph Entity Matching}, where the goal is to identify nodes across two domain-specific KGs that refer to the same real-world entity. These matches enable KG fusion, which is particularly valuable in specialized industrial settings. We note that KG entity matching differs from the well-studied entity alignment problem \cite{}. In KG entity matching, the textual information of both KGs is in the same language, and only a limited number of nodes are expected to match, in contrast to entity alignment settings.
+
+Entity matching is challenging: while simple string matching offers a strong baseline, identical names can denote different entities, and equivalent entities often appear under different names.
+
+Motivated by advances in Large Language Models (LLMs), we formulate KG entity matching as a RAG-like problem. Our main contribution is the design of node-level textual representations that combine textual descriptions with local graph context. These representations are used to retrieve candidate nodes from the other KG, after which an LLM selects the best match, if any.
+
+Experiments on the OAEI KG Matching benchmark \cite{} show that LLMs effectively leverage semi-structural information, though challenges remain for them. Compared to traditional embedding-based methods, LLMs achieve higher accuracy, yet the performance gap is smaller than expected. Our contributions are threefold:
+
+\begin{enumerate}[nosep]
+    \setlength\itemsep{0em}
+    \setlength\parskip{0em}
+    \setlength\parsep{0em}
+    \item We propose multiple textual representation strategies for encoding semi-structured KG information.
+    \item We conduct extensive experiments on KG entity matching, showing that LLMs achieve strong accuracy but also make unexpected errors.
+    \item We demonstrate that lightweight, resource-efficient approaches perform only slightly worse than LLMs.
+\end{enumerate}
+
+\section{Literature review}
+
+Entity alignment 
+\begin{itemize}
+    \item Más mint a KG matching
+    \item Mihez hasonlít a mi megoldásunk EA témakörben olvasottakhoz, és miben más
+\end{itemize}
+
+GraphRAG - ők szövegből indulnak ki és építenek “kamu” KG-t, mi meg real KG-ból
+
+Egyéb RAG módszerek, ahol strukturált információt vonnak be a contextbe/promptba
+
+
+SentenceBert \cite{sentencebert}
+
+\colorbox{pink}{TODO}
+
+\section{Dataset}
+
+We evaluate our approach using the \emph{Ontology Alignment Evaluation Initiative (OAEI)} knowledge graph track dataset.\footnote{Data: \url{https://oaei.ontologymatching.org/2025/knowledgegraph/index.html}}
+
+This benchmark consists of eight fandom wiki sites, provided in \textit{OWL} format, covering popular universes such as \textit{Star Wars}, \textit{Star Trek}, and \textit{Marvel}. The graphs span a variety of domains (e.g., games, movies, comics) and vary in size from approximately 5,000 to 200,000 nodes. Each graph is derived from a site scrape that includes the infobox information, primarily textual attributes, the first few paragraphs of the main article text, every entity mention in the whole page and links to images.
+
+Manually annotated reference alignments are available for five graph pairs. However, due to the limited annotation resources, these alignments are partial: not all correct correspondences are included in the gold standard. As a result, the evaluation requires special handling. Specifically, when assessing a predicted correspondence, if neither node in the pair appears in the gold standard, the status of the pair remains indeterminate (i.e., it may be either a true match or a false positive). Such pairs are excluded from the evaluation. Precision, recall, and F1 scores are then computed on the remaining pairs to assess system performance.
+
+\section{Methodology}
+
+\begin{figure*}[t] % "H" keeps the image exactly here (requires float package)
+    \centering
+    \includegraphics[width=1\textwidth]{latex/images/dogma_matcher.drawio.png}
+    \caption{Proposed KG entity matching framework}
+    \label{fig:framework}
+\end{figure*}
+
+In this section, we describe our pipeline for the KG entity matching problem. Our methodology consists of four major components: (i) generation of entity text representations (dogtags), (ii) similarity-based and model-based matching algorithms (iii) deduplication to enforce 1:1 alignments (iv) merging multiple pairings into a single one. The framework diagram, shown in Figure \ref{fig:framework}, illustrates the overall process of these stages.
+
+\subsection{Textual Entity Representations (Dogtags)}
+
+Entities in the fandom KGs contain rich textual information. To leverage them in a controlled manner, we construct multiple forms of entity text representations, which we refer to as dogtags:
+
+\begin{itemize}[nosep]
+    \setlength\itemsep{0em}
+    \setlength\parskip{0em}
+    \setlength\parsep{0em}
+    \item \textbf{Node:} Includes only the entity’s label, alternative labels, type, and abstract.
+    \item \textbf{Node - Short:} Same as \emph{Node}, but only the first two sentences of the abstract are kept.
+    \item \textbf{Node + Relations:} Contains all available textual and relational information for each node, excluding links to other fandom pages, images or irrelevant metadata.
+    \item \textbf{LLM Summary:} A concise paragraph generated with \emph{Llama-3.1-70B-Instruct}, leveraging all available textual and relational information. To maintain tractability, neighbor relations were sampled when exceeding 20.
+\end{itemize}
+
+Each entity in every graph is associated with all four dogtags, which serve as inputs to the matching algorithms described below.
+
+\subsection{Matching Algorithms}
+
+All dogtags are embedded into dense vector representations using the \emph{BGE-large-v1.5} embedding model. We measure semantic similarity between entities using cosine similarity. We evaluate several strategies to extract alignments where we always start the matching from the smaller graph's side:
+
+\begin{enumerate}[nosep]
+    \setlength\itemsep{0em}
+    \setlength\parskip{0em}
+    \setlength\parsep{0em}
+    \item \textbf{Exact Matching:} If the label or an alternative label matches exactly across the two graphs, the corresponding pair is aligned. This method is independent of the dogtags.
+    \item \textbf{Top-1 Embedding Similarity:} For each entity in Graph A, we identify the entity in Graph B with the highest cosine similarity score and align them.
+    \item \textbf{Top-10 with Reranking:} For each entity in Graph A, we retrieve the top-10 most similar candidates from Graph B. We then apply \emph{BGE-large-reranker} to reorder the candidates and select the highest ranking result.
+    \item \textbf{LLM-based Selection:} We start from the top-10 most similar candidates. We present the anchor entity alongside its candidates to an LLM, asking it to select the best match or \textit{None} if no appropriate match exists. We test two prompting styles: 
+    \begin{itemize}
+        \item \textbf{Normal:} The task is explained in a straightforward manner, asking the model to choose the most appropriate candidate.  
+        \item \textbf{Strict:} The instructions emphasize that a candidate should only be selected when the model is completely certain of a match.
+    \end{itemize}
+
+\end{enumerate}
+
+Methods (2, 3, 4) are applied separately for each dogtag representation, allowing us to analyze the impact of different text extractions on matching performance.
+
+\subsection{Deduplication}
+
+The above methods may yield 1:N or N:M pairs, while we require 1:1 alignments. We call these duplicates. To resolve duplicates, we apply two complementary strategies:
+
+\textbf{Score-based Deduplication} (applied to Methods 2 and 3): When similarity or reranker scores are available, we retain only the pair with the highest score for each entity.
+
+\textbf{String-based Deduplication} (applied to Methods 1 and 4): When explicit scores are not available, we rely on fuzzy string matching between node names to select the most appropriate pair.
+
+\subsection{Merging Alignments}
+
+As we obtain multiple sets of alignments from these methods, we are interested in integrating them into a single alignment. The input for our procedure is two alignment sets: a primary alignment set, which has higher priority (e.g., produced by a more reliable method), and a secondary alignment set, which serves as a supplementary source of matches.
+
+When the primary method identifies exact matches (nodes with corresponding labels), we additionally compute a threshold defined as the median of their similarity scores. This threshold serves as an extra criterion in the merging process, ensuring that only secondary pairs with sufficiently strong similarity are considered for inclusion.
+
+For each pair in the secondary alignment set, we check whether either entity is already aligned in the primary set. If not, we further verify that the pair’s similarity meets or exceeds the previously computed median threshold; only then is the pair added to the merged alignment. Pairs that are already aligned or fall below the threshold are discarded to avoid duplicates or weak matches.
+
+This approach ensures that alignments remain strictly 1:1 across graphs while allowing complementary methods to contribute additional matches. With this approach we can study how different alignment strategies reinforce each other, and measure their incremental contribution to overall coverage.
+
+\section{Results}
+
+\colorbox{pink}{TODO}
+
+\section*{Conclusion}
+
+\colorbox{pink}{TODO}
+
+\section*{Limitations}
+We observed that some of the gold-standard pairs provided for evaluation were incorrect, which may have affected performance estimates. Even though we are"""". Moreover, the Top-1 and Reranking workflows are designed to always output a match, even when no true correspondence exists. While this was not problematic in our evaluation setup, it would represent a critical flaw in applications where the full set of gold pairs is known. LLM-based solutions, although often more accurate, require substantially more computational resources, which limits their accessibility to many users. 
+Additionally, entities with sparse or noisy descriptions/relations are harder to align reliably. Embedding-based methods may conflate entities with highly similar contexts (e.g., multiple characters sharing titles or roles), leading to false positives. Finally, our deduplication heuristics can discard valid alignments if similarity scores fail to reflect the true underlying connections.
+
+\colorbox{pink}{TODO}
+
+\section*{Acknowledgments}
+This research has been supported by the European Union project RRF-2.3.1-21-2022-00004 within the framework of the Artificial Intelligence National Laboratory. Miklós Krész was supported by the Slovenian Research and Innovation Agency (ARIS) through research program P1-0404 and by the research program Cognicom (0013103) at the University of Primorska. He is also grateful for the support of ARIS grant J7-60122.
+
+\bibliography{custom}
+
+\appendix
+
+\section{Appendix Example}
+
+\colorbox{pink}{TODO} 
+
+1. Prompts
+
+2. Deduplication table
+
+3. Best F1 table
+
+\end{document}
