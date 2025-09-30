@@ -14,6 +14,14 @@
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{enumitem}
+\usepackage{booktabs}
+
+\usepackage{pifont}
+\newcommand{\cmark}{\textcolor{green}{\ding{51}}} % green check
+\newcommand{\xmark}{\textcolor{red}{\ding{55}}} 
+
+\usepackage{listings}
+\lstset{basicstyle=\ttfamily,breaklines=true}
 
 \setlength\titlebox{7.5cm}
 
@@ -54,15 +62,17 @@
 
 \section{Introduction}
 
-Knowledge Graphs (KGs) are semi-structured knowledge bases in which nodes are typically associated with long textual descriptions, while the textual labels of edges semantically characterize the relationships among nodes. Processing KGs therefore requires specialized methodologies: standard graph mining techniques, such as Graph Neural Networks \cite{}, generally ignore textual information, whereas natural language processing (NLP) methods, including Retriever-Augmented Generation (RAG), are designed for purely textual data.
+Knowledge Graphs (KGs) are semi-structured knowledge bases in which nodes are typically associated with long textual descriptions, while the textual labels of edges semantically characterize the relationships among nodes. Processing KGs therefore requires specialized methodologies: standard graph mining techniques, such as Graph Neural Networks \cite{gnn_1, gnn_2}, generally ignore textual information, whereas natural language processing (NLP) methods, including Retriever-Augmented Generation (RAG) \cite{rag_survey, graphrag}, are designed for purely textual data.
 
-We study the task of \emph{Knowledge Graph Entity Matching}, where the goal is to identify nodes across two domain-specific KGs that refer to the same real-world entity. These matches enable KG fusion, which is particularly valuable in specialized industrial settings. We note that KG entity matching differs from the well-studied entity alignment problem \cite{}. In KG entity matching, the textual information of both KGs is in the same language, and only a limited number of nodes are expected to match, in contrast to entity alignment settings.
+We study the task of \emph{Knowledge Graph Entity Matching}, where the goal is to identify nodes across two domain-specific KGs that refer to the same real-world entity. These matches enable KG fusion, which is particularly valuable in specialized industrial settings. We note that KG entity matching differs from the well-studied entity alignment problem \cite{alignment_survey}. In KG entity matching, the textual information of both KGs is in the same language, and only a limited number of nodes are expected to match \cite{matching_survey}, in contrast to entity alignment settings.
+
+Notably, both tasks can benefit from embedding-based approaches, where entities, relations, and even schemas are represented in continuous vector spaces. In their seminal paper, \citet{sentence_bert} demonstrate how Sentence-BERT embeddings can capture semantic similarity between textual representations of entities, helping both alignment and matching in knowledge graphs.
 
 Entity matching is challenging: while simple string matching offers a strong baseline, identical names can denote different entities, and equivalent entities often appear under different names.
 
 Motivated by advances in Large Language Models (LLMs), we formulate KG entity matching as a RAG-like problem. Our main contribution is the design of node-level textual representations that combine textual descriptions with local graph context. These representations are used to retrieve candidate nodes from the other KG, after which an LLM selects the best match, if any.
 
-Experiments on the OAEI KG Matching benchmark \cite{} show that LLMs effectively leverage semi-structural information, though challenges remain for them. Compared to traditional embedding-based methods, LLMs achieve higher accuracy, yet the performance gap is smaller than expected. Our contributions are threefold:
+Experiments on the \emph{OAEI KG Matching Benchmark } \cite{oaei_kgtrack} show that LLMs effectively leverage semi-structural information, though challenges remain for them. Compared to traditional embedding-based methods, LLMs achieve higher accuracy, yet the performance gap is smaller than expected. Our contributions are threefold:
 
 \begin{enumerate}[nosep]
     \setlength\itemsep{0em}
@@ -75,39 +85,96 @@ Experiments on the OAEI KG Matching benchmark \cite{} show that LLMs effectively
 
 \section{Literature review}
 
-Entity alignment 
-\begin{itemize}
-    \item Más mint a KG matching
-    \item Mihez hasonlít a mi megoldásunk EA témakörben olvasottakhoz, és miben más
-\end{itemize}
+Knowledge Graphs (KGs) have emerged as a powerful paradigm for representing structured knowledge across various domains. They capture entities, attributes, and relations in a graph structure, enabling semantic search, reasoning, and interoperability. As highlighted in \citet{kg_opportunities}, KGs offer significant opportunities but also face challenges in terms of scalability, heterogeneity, and alignment across different sources.
 
-GraphRAG - ők szövegből indulnak ki és építenek “kamu” KG-t, mi meg real KG-ból
+Real-world applications may require the integration of heterogeneous KGs, since datasets frequently differ in scope, granularity, and structure. Aligning knowledge graphs is crucial for achieving semantic interoperability: it allows entities and relations that represent the same real-world concept to be connected, unlocking richer insights and applications, for example in healthcare \cite{hl7_fhir, personalized_medicine} or logistics \cite{logistics_alignment}. It is important to note that this task differs from recent \emph{GraphRAG} approaches \cite{graphrag}, which focus on retrieval-augmented generation using graph-structured contexts. In our setting, the graphs themselves are already present, and the challenge lies in effectively aligning them.
 
-Egyéb RAG módszerek, ahol strukturált információt vonnak be a contextbe/promptba
+The alignment problem has historically been studied under the umbrella of \emph{Ontology Alignment}, which typically assumes entire ontologies of similar size and structure. Ontology alignment methods emphasize schema-level matching, class hierarchies, and conceptual mappings \cite{alignment_survey}. While early works focused on fine-tuning embedding-based approaches \cite{alignment_bertmap, alignment_embedding}, researchers started to exploit LLMs to achieve better alignment results \cite{alignment_llm_1, alignment_llm_2, alignment_llm_3}. Since the problem is still quite challenging in real-world scenarios, the role of additional external background knowledge has also been studied recently \cite{survey_background}.
 
+On the other hand, \emph{Entity Matching} focuses on aligning entities across heterogeneous graphs that may differ significantly in size, density, and coverage \cite{matching_survey}. The two tasks overlap but differ in scope: ontology alignment primarily addresses schema alignment, while entity matching deals with instance-level entity correspondence. Emerging approaches include optimizing traditional embedding-based solutions \cite{matching_embedding}, or applying novel methods such as transformers \cite{matching_transformers} or Monte Carlo Tree Search \cite{matching_montecarlo}.
 
-SentenceBert \cite{sentencebert}
+Despite all other attempts, the extensive use of LLMs still remains one of the main directions in the field of KG entity matching \cite{matching_chatgpt_survey, matching_llm_survey}. Existing studies focus on different aspects of harnessing the capabilities of large language models, such as zero-shot prompting \cite{matching_zeroshot}, merging the results of different decision strategies \cite{matching_multi_decision}, utilizing extensive background knowledge \cite{matching_background} or fine-tuning existing models for the task \cite{matching_finetune}.
 
-\colorbox{pink}{TODO}
+\emph{Context Engineering} has emerged as a critical discipline in optimizing LLM performance through systematic information payload design \cite{context_survey}. Recent works showcase various approaches to context engineering: from structured knowledge representations \cite{jiang2023structgpt,fang2024karpa} to iterative reasoning frameworks \cite{luo2023reasoning_rog,sun2023think} that combine LLMs with graph-based methods. Studies show that the format and organization of input context significantly impacts LLM performance, with some works like \cite{liu2024_struxgpt} suggesting that well-structured, hierarchical representations often lead to more accurate responses. The field encompasses diverse strategies including knowledge verbalization \cite{ankush-etal-2023-kitlm}, triple-to-text conversion \cite{agarwal-etal-2021-knowledge}, and various data representation formats (natural language, JSON, Python code). While some research indicates that more structured formats (e.g., Python) outperform natural language representations, findings remain context-dependent. Furthermore, the ordering of information (as shown in \cite{ge2025graphdescriptiveorderaffect}) can substantially affect LLM reasoning capabilities, highlighting the importance of careful context design in LLM applications.
+
+In their work, \citet{compare_1} identify candidate alignments for a given entity by considering name and structure embedding similarities between entities across the KG pairs. Then, an LLM makes iterative decisions for the given candidate set until it converges to a final answer. In a more recent study, \citet{compare_2} use LLMs to summarize entity descriptions and select candidates based on the embeddings of these summaries. The ultimate decision in their approach is similarly determined by an LLM.
+
+Building on these ideas, we extend the scope of our work to match entities on highly heterogeneous knowledge graphs and explore context engineering to improve performance. We examine different types of entity descriptions, traditional methods and prompting techniques to optimize entity matching performance. Interestingly, our results show that traditional embedding-based methods can achieve performance nearly on par with LLM-based approaches, highlighting that simpler methods remain highly competitive in certain scenarios. We further highlight that the effectiveness of different methods depends on the type of entity descriptions used.
 
 \section{Dataset}
+\label{sec:dataset}
 
-We evaluate our approach using the \emph{Ontology Alignment Evaluation Initiative (OAEI)} knowledge graph track dataset.\footnote{Data: \url{https://oaei.ontologymatching.org/2025/knowledgegraph/index.html}}
+\begin{table*}[h]
+\centering
+\resizebox{\textwidth}{!}{%
 
-This benchmark consists of eight fandom wiki sites, provided in \textit{OWL} format, covering popular universes such as \textit{Star Wars}, \textit{Star Trek}, and \textit{Marvel}. The graphs span a variety of domains (e.g., games, movies, comics) and vary in size from approximately 5,000 to 200,000 nodes. Each graph is derived from a site scrape that includes the infobox information, primarily textual attributes, the first few paragraphs of the main article text, every entity mention in the whole page and links to images.
+\begin{tabular}{llccc}
+\toprule
+\textbf{Source} & \textbf{Source URL} & \textbf{\#Instances} & \textbf{\#Properties} & \textbf{\#Classes} \\
+\midrule
+Star Wars Wiki                 & \url{http://starwars.wikia.com}                & 145,033 & 700 & 269 \\
+The Old Republic Wiki          & \url{http://swtor.wikia.com}                   & 4,180   & 368 & 101 \\
+Star Wars Galaxies Wiki        & \url{http://swg.wikia.com}                     & 9,634   & 148 & 67  \\
+\midrule
+Marvel Database                & \url{http://marvel.wikia.com}                  & 210,996 & 139 & 186 \\
+Marvel Cinematic Universe Wiki & \url{http://marvelcinematicuniverse.wikia.com} & 17,187  & 147 & 55  \\
+\midrule
+Memory Alpha                   & \url{http://memory-alpha.wikia.com}            & 45,828  & 325 & 181 \\
+Star Trek Expanded Universe    & \url{http://stexpanded.wikia.com}              & 13,426  & 202 & 283 \\
+Memory Beta                    & \url{http://memory-beta.wikia.com}             & 51,323  & 423 & 240 \\
+\bottomrule
+\end{tabular}
+}
+\vspace{-6px}
+\caption{The scraped fandom sites and their graph's sizes}
+\label{tab:datasets}
+\end{table*}
 
-Manually annotated reference alignments are available for five graph pairs. However, due to the limited annotation resources, these alignments are partial: not all correct correspondences are included in the gold standard. As a result, the evaluation requires special handling. Specifically, when assessing a predicted correspondence, if neither node in the pair appears in the gold standard, the status of the pair remains indeterminate (i.e., it may be either a true match or a false positive). Such pairs are excluded from the evaluation. Precision, recall, and F1 scores are then computed on the remaining pairs to assess system performance.
+
+\begin{table}[h]
+\centering
+
+\begin{tabular}{l|c|}
+%\cline{2-2}
+%                                             & \multicolumn{1}{l|}{\textbf{Count}} \\ 
+\hline
+\multicolumn{1}{|l|}{mcu-marvel}             & 1667                                \\ \hline
+\multicolumn{1}{|l|}{memoryalpha-memorybeta} & 9365                                \\ \hline
+\multicolumn{1}{|l|}{stexpanded-memoryalpha} & 1779                                \\ \hline
+\multicolumn{1}{|l|}{swg-starwars}           & 1121                                \\ \hline
+\multicolumn{1}{|l|}{swtor-starwars}         & 1429                                \\ \hline
+\end{tabular}
+\vspace{-6px}
+\caption{Number of gold pairs}
+\label{tab:golds}
+\end{table}
+
+The \emph{Ontology Alignment Evaluation Initiative (OAEI)} has provided community-driven benchmarks for decades. The \emph{OAEI Knowledge Graph Track}\footnote{Data: \url{https://oaei.ontologymatching.org/2025/knowledgegraph}} has focused specifically on entity alignment across large-scale heterogeneous KGs, making it a critical reference point for evaluating progress in entity matching.
+
+This benchmark consists of eight fandom wiki sites (see Table \ref{tab:datasets}), provided in \textit{OWL} format, covering popular universes such as \textit{Star Wars}, \textit{Star Trek}, and \textit{Marvel}. The graphs span a variety of domains (e.g., games, movies, comics) and vary in size from approximately 5,000 to 200,000 nodes. Each graph is derived from a site scrape that includes the infobox information, primarily textual attributes, the first few paragraphs of the main article text, every entity mention in the whole page and links to images.
+
+Manually annotated reference alignments are available for five graph pairs (See Table \ref{tab:golds}). However, due to the limited annotation resources, these alignments are partial: not all correct correspondences are included in the gold standard. As a result, the evaluation requires special handling. Specifically, when assessing a predicted correspondence, if neither node in the pair appears in the gold standard, the status of the pair remains indeterminate (i.e., it may be either a true match or a false positive). Such pairs are excluded from the evaluation. Precision, recall, and F1 scores are then computed on the remaining pairs to assess system performance. This evaluation aligns with the dataset creators' method.
 
 \section{Methodology}
 
 \begin{figure*}[t] % "H" keeps the image exactly here (requires float package)
     \centering
+    \includegraphics[width=1\textwidth]{latex/images/DogtagExtraction_orange2.drawio.png}
+
+    \vspace{-10px}
+    \caption{Information used from the KG to create the representations}
+    \label{fig:dogtag_extract}
+\end{figure*}
+
+\begin{figure*}[t] % "H" keeps the image exactly here (requires float package)
+    \centering
     \includegraphics[width=1\textwidth]{latex/images/dogma_matcher.drawio.png}
+    \vspace{-22px}
     \caption{Proposed KG entity matching framework}
     \label{fig:framework}
 \end{figure*}
 
-In this section, we describe our pipeline for the KG entity matching problem. Our methodology consists of four major components: (i) generation of entity text representations (dogtags), (ii) similarity-based and model-based matching algorithms (iii) deduplication to enforce 1:1 alignments (iv) merging multiple pairings into a single one. The framework diagram, shown in Figure \ref{fig:framework}, illustrates the overall process of these stages.
+In this section, we describe our pipeline for the KG entity matching problem. Our methodology consists of four major components: (i) generation of entity text representations (dogtags), (ii) similarity-based and model-based matching algorithms, (iii) deduplication to enforce 1:1 alignments and (iv) merging multiple pairings into a single one. The framework diagram, shown in Figure \ref{fig:framework}, illustrates the overall process of these stages.
 
 \subsection{Textual Entity Representations (Dogtags)}
 
@@ -120,14 +187,15 @@ Entities in the fandom KGs contain rich textual information. To leverage them in
     \item \textbf{Node:} Includes only the entity’s label, alternative labels, type, and abstract.
     \item \textbf{Node - Short:} Same as \emph{Node}, but only the first two sentences of the abstract are kept.
     \item \textbf{Node + Relations:} Contains all available textual and relational information for each node, excluding links to other fandom pages, images or irrelevant metadata.
-    \item \textbf{LLM Summary:} A concise paragraph generated with \emph{Llama-3.1-70B-Instruct}, leveraging all available textual and relational information. To maintain tractability, neighbor relations were sampled when exceeding 20.
+    \item \textbf{LLM Summary:} A concise paragraph generated with an LLM, leveraging all available textual and relational information. To maintain tractability for LLM input, we limit relation neighbors to a maximum of 20.
 \end{itemize}
 
+We visualized the dogtag extraction process in Figure \ref{fig:dogtag_extract}
 Each entity in every graph is associated with all four dogtags, which serve as inputs to the matching algorithms described below.
 
 \subsection{Matching Algorithms}
 
-All dogtags are embedded into dense vector representations using the \emph{BGE-large-v1.5} embedding model. We measure semantic similarity between entities using cosine similarity. We evaluate several strategies to extract alignments where we always start the matching from the smaller graph's side:
+All dogtags are embedded into dense vector representations using a Sentence Embedder model. We measure semantic similarity between entities using cosine similarity. We evaluate several strategies to extract alignments where we always start the matching from the smaller graph's side:
 
 \begin{enumerate}[nosep]
     \setlength\itemsep{0em}
@@ -135,13 +203,12 @@ All dogtags are embedded into dense vector representations using the \emph{BGE-l
     \setlength\parsep{0em}
     \item \textbf{Exact Matching:} If the label or an alternative label matches exactly across the two graphs, the corresponding pair is aligned. This method is independent of the dogtags.
     \item \textbf{Top-1 Embedding Similarity:} For each entity in Graph A, we identify the entity in Graph B with the highest cosine similarity score and align them.
-    \item \textbf{Top-10 with Reranking:} For each entity in Graph A, we retrieve the top-10 most similar candidates from Graph B. We then apply \emph{BGE-large-reranker} to reorder the candidates and select the highest ranking result.
-    \item \textbf{LLM-based Selection:} We start from the top-10 most similar candidates. We present the anchor entity alongside its candidates to an LLM, asking it to select the best match or \textit{None} if no appropriate match exists. We test two prompting styles: 
+    \item \textbf{Top-10 with Reranking:} For each entity in Graph A, we retrieve the top-10 most similar candidates from Graph B. We then apply a Reranker Model to reorder the candidates and select the highest ranking result.
+    \item \textbf{LLM-based Selection:} We start from the top-10 most similar candidates. We present the anchor entity alongside its candidates to an LLM, asking it to select the best match or \textit{None} if no appropriate match exists. We test two prompting styles:
     \begin{itemize}
         \item \textbf{Normal:} The task is explained in a straightforward manner, asking the model to choose the most appropriate candidate.  
         \item \textbf{Strict:} The instructions emphasize that a candidate should only be selected when the model is completely certain of a match.
     \end{itemize}
-
 \end{enumerate}
 
 Methods (2, 3, 4) are applied separately for each dogtag representation, allowing us to analyze the impact of different text extractions on matching performance.
@@ -155,6 +222,7 @@ The above methods may yield 1:N or N:M pairs, while we require 1:1 alignments. W
 \textbf{String-based Deduplication} (applied to Methods 1 and 4): When explicit scores are not available, we rely on fuzzy string matching between node names to select the most appropriate pair.
 
 \subsection{Merging Alignments}
+\label{sec:merging_alignments}
 
 As we obtain multiple sets of alignments from these methods, we are interested in integrating them into a single alignment. The input for our procedure is two alignment sets: a primary alignment set, which has higher priority (e.g., produced by a more reliable method), and a secondary alignment set, which serves as a supplementary source of matches.
 
@@ -164,7 +232,107 @@ For each pair in the secondary alignment set, we check whether either entity is 
 
 This approach ensures that alignments remain strictly 1:1 across graphs while allowing complementary methods to contribute additional matches. With this approach we can study how different alignment strategies reinforce each other, and measure their incremental contribution to overall coverage.
 
-\section{Results}
+\section{Experimental setup}
+%We evaluate three systems: (i) a simple embedding-based baseline that selects the most similar candidate (``Top1''), 
+%(ii) another baseline that retrieves the top-10 candidates by embedding similarity and applies a reranker model to select the top one (`Top10 Reranked''), 
+%and (iii) our proposed approach, where an LLM is prompted with the top-10 candidates and selects the correct match or abstains. For this solution we have a Normal and Strict version.
+%The first two serve as baselines, while the third represents our framework.
+
+\paragraph{Models.} 
+For embeddings we use \emph{BAAI/bge-large-en-v1.5}, for reranking we use \emph{BAAI/bge-reranker-large}, 
+and as the LLM we use \emph{Llama-3.1-70B-Instruct}, all obtained from HuggingFace. 
+Sampling is disabled for the LLM to ensure deterministic outputs. 
+
+\paragraph{Datasets and Evaluation.} 
+We follow the evaluation protocols recommended by the dataset creators (see Section \ref{sec:dataset})
+
+\paragraph{Implementation Details.} 
+All methods run purely in inference mode; no finetuning or additional training is performed.
+The experiments are executed on 4 × H100 GPUs. 
+Since all models and inference steps are deterministic, results are stable across repeated runs. 
+
+\paragraph{Reproducibility.} 
+Our full codebase is publicly available on GitHub.\footnote{\url{https://github.com/material1999/KGEntityMatching-Public}} 
+We provide a \texttt{commands.txt} file that documents the exact commands used for running every experiment end-to-end.
+
+\paragraph{Experiments}
+
+Table~\#TODO presents the results for the KG entity matching task. 
+We evaluate all systems in combination with the exact matching pairs. For the Top1 and Reranked baselines, we apply the median thresholding strategy described in Section~\ref{sec:merging_alignments}. 
+In contrast, when merging with the LLM-based selection, no thresholding is applied since the model does not produce scores; however, the LLM may abstain from selecting a pair.
+
+%In table \#TODO, we depict the results for KG Matching task and compare the performance of our proposed framework. To embed the individual text descriptions we used \emph{BAAI/bge-large-en-v1.5}, for the reranker model we used \emph{BAAI/bge-reranker-large}, as for the LLM we picked \emph{Llama-3.1-70B-Instruct} where we turned off sampling to make the generation deterministic. All of these models we got from Huggingface. 
+%To maintain tractability for the LLM Summary, the relations were sampled when exceeding 20 neighbors.
+%To run the experiments we used 4×H100 GPUs. 
+%All of our code available on github\footnote{Github: \url{https://github.com/material1999/KGEntityMatching-Public/tree/main}} including a commands.txt which goes through the whole pipeline.
+
+
+\section{Discussion}
+
+\paragraph{How consistent is the LLM in candidate selection?}
+To assess the stability of the LLM-based selection, we investigated how sensitive its choices are to the ordering of candidate entities. Specifically, we varied the order of the top-10 most similar candidates (based on cosine similarity) presented to the LLM and compared the resulting alignments. We considered three settings:
+\begin{itemize}[nosep]
+\setlength\itemsep{0em}
+\setlength\parskip{0em}
+\setlength\parsep{0em}
+\item \textbf{Original:} candidates sorted in decreasing cosine similarity,
+\item \textbf{Reverse:} candidates sorted in the opposite order,
+\item \textbf{Random:} candidates presented in a randomly permuted order.
+\end{itemize}
+
+Figure~\ref{fig:shuffle_llm_pick} shows the distribution of the positions chosen by the LLM. In the original ordering, most selections concentrate on the first candidate, as expected. Reversing the order flips this distribution, with the majority now drawn from the end of the original ranking. Interestingly, the random ordering reveals a non-uniform bias: the LLM strongly prefers earlier positions, with selection probability decreasing as candidates appear later in the list. This effect persisted across three independent random shuffles, confirming its robustness. Notably, even in the reversed ordering, we observe a small but systematic preference for the first position, suggesting a positional bias beyond semantic content.
+
+To quantify the impact of these orderings, we compared the resulting alignments against those obtained with the original order (Figure~\ref{fig:shuffle_size_intersect}). The overlap is limited: the reversed ordering retains only about 50\% of the original pairs, with an overall 33\% lower selection rate. The random ordering performs slightly better, preserving 66\% of the pairs, but still diverges substantially. These findings indicate that the LLM’s alignment decisions are highly sensitive to candidate ordering and subject to positional bias. Consequently, LLM-based selection cannot be considered order-invariant, and care must be taken when designing candidate presentation strategies.
+
+
+\begin{figure*}[h] % "H" keeps the image exactly here (requires float package)
+    \centering
+    \includegraphics[width=1\textwidth]{latex/images/shuffle_top10_llmselect_order.png}
+    \vspace{-30px}
+    \caption{LLM pick index frequency based on different orderings of the Top10 entities.}
+    \label{fig:shuffle_llm_pick}
+\end{figure*}
+
+
+\begin{figure}[h]
+    \includegraphics[width=1.0\columnwidth]{latex/images/shuffle_size_intersection.png}
+    \vspace{-30px}
+    \caption{Top10 Ordering: Size and intersection comparison. (The intersections are compared agains the cosine similarity ordering.)}
+    \label{fig:shuffle_size_intersect}
+\end{figure}
+
+
+\paragraph{Why does the LLM summary perform better?}
+
+\begin{figure}[h]
+    \includegraphics[width=1.0\columnwidth]{latex/images/gold_recall_top10.png}
+    \vspace{-25px}
+    \caption{Top10 pairs' Gold Recall for each Dogtag version.}
+    \label{fig:gold_recall}
+\end{figure}
+
+We made a comparison over the Top10 elements and the gold pairs in terms of recall (How many gold pairs are present in the Top10). We compared all 4 of our Dogtag setups in this manner. In figure \ref{fig:gold_recall} we show our findings. We can see that there are more gold pairs present when using the LLM generated summary than any other method. This can be the root cause why all the underlying matchers perform better when using this textual representation of an entity.
+
+There are two key aspects here:
+\begin{itemize}[nosep]
+    \setlength\itemsep{0em}
+    \setlength\parskip{0em}
+    \setlength\parsep{0em}
+    \item Wiki Links are very helpful
+    \item Natural language text is better then structured text
+\end{itemize}
+
+On the Wiki Links, we manually looked into what additional information do these relations bring to the table. We came to the conclusion that these are great for an extension but the most important information is already present in the previously included relations/text. Our conclusion is that the wiki links cannot make that much of a difference. We show examples in Appendix \ref{sec:examples} where the newly brought in informations is barely visible on the LLM Summary texts. All things point to the Summary text being better quality than the structured text. In the Appendix examples it is visible that multiple relations have the same information, meaning redundancy, which in case relevant information is duplicated it can shift the embeddings in the opposite directions from the gold pairs. 
+\#TODO
+
+
+We included examples in Table \ref{tab:example-comparison}. 
+
+
+\paragraph{Did the LLM Summary include information outside the prompt?}
+
+No! We manually checked hundreds of LLM summaries and found no information that was generated outside the prompt's information set.  
+
 
 \colorbox{pink}{TODO}
 
@@ -173,7 +341,7 @@ This approach ensures that alignments remain strictly 1:1 across graphs while al
 \colorbox{pink}{TODO}
 
 \section*{Limitations}
-We observed that some of the gold-standard pairs provided for evaluation were incorrect, which may have affected performance estimates. Even though we are"""". Moreover, the Top-1 and Reranking workflows are designed to always output a match, even when no true correspondence exists. While this was not problematic in our evaluation setup, it would represent a critical flaw in applications where the full set of gold pairs is known. LLM-based solutions, although often more accurate, require substantially more computational resources, which limits their accessibility to many users. 
+We observed that some of the gold-standard pairs provided for evaluation were incorrect, which may have affected performance estimates. Moreover, the Top-1 and Reranking workflows are designed to always output a match, even when no true correspondence exists. While this was not problematic in our evaluation setup, it would represent a critical flaw in applications where the full set of gold pairs is known. LLM-based solutions, although often more accurate, require substantially more computational resources, which limits their accessibility to many users. 
 Additionally, entities with sparse or noisy descriptions/relations are harder to align reliably. Embedding-based methods may conflate entities with highly similar contexts (e.g., multiple characters sharing titles or roles), leading to false positives. Finally, our deduplication heuristics can discard valid alignments if similarity scores fail to reflect the true underlying connections.
 
 \colorbox{pink}{TODO}
@@ -185,11 +353,116 @@ This research has been supported by the European Union project RRF-2.3.1-21-2022
 
 \appendix
 
-\section{Appendix Example}
+\section{Examples}
+\label{sec:examples}
 
-\colorbox{pink}{TODO} 
+We illustrate different Dogtag representations for the entity:
+\texttt{Black\_Sun\_AEG-77\_Vigo\_Gunship}.  
 
-1. Prompts
+\begin{figure}[h]
+\centering
+\begin{tabular}{p{0.15\linewidth} p{0.8\linewidth}}
+\toprule
+\textbf{Dogtag} & \textbf{Content} \\
+\midrule
+Node (short) &
+\textbf{Label:} Black Sun AEG-77 Vigo Gunship \newline
+\textbf{Type:} class/starship \newline
+\textbf{Abstract:} The Black Sun's transports became a common sight in both the underworld and legitimate shipping with the advent of Xizor Transport Systems. This particular transport class became well known as lightly defended. \\[0.5em]
+\midrule
+Node + Relations &
+\textbf{Label:} Black Sun AEG-77 Vigo Gunship \newline
+\textbf{Type:} starship \newline
+\textbf{Abstract:} The Black Sun's transports became a common sight \dots elevated to the status of ``gunship.'' \newline
+\textbf{Attributes:} \newline
+\quad AltLabel: [Black Sun AEG-77 Vigo Gunship, Blacksun AEG-77 Vigo Gunship] \newline
+\quad Crew: Pilot, co-pilot, engineer, 6 gunners \newline
+\quad Mass: $\sim$3 million \newline
+\quad Speed: 0.6 \newline
+\quad Weapons: 2 forward guns, 6 turrets \\
+\midrule
+LLM Summary &
+The Black Sun AEG-77 Vigo Gunship is a modified transport vessel converted into a heavily armed escort ship. It carries two forward guns, six turrets, and can accommodate crew and passengers. With a mass of $\sim$3 million and a speed of 0.6, it serves as a formidable convoy escort in the Black Sun fleet. \\
+\bottomrule
+\end{tabular}
+\caption{Alternative representations of the entity \texttt{Black\_Sun\_AEG-77\_Vigo\_Gunship}.}
+\end{figure}
+
+
+\begin{table*}[h!]
+\footnotesize
+\centering
+\begin{tabular}{|p{7cm}|p{7cm}|}
+\hline
+\textbf{http://swg.wikia.com/A\_Demon\_Doll} & 
+\textbf{http://starwars.wikia.com/Desert\_Demon\_Doll} \\
+\hline
+
+\textbf{LLM Summary: \cmark} \newline
+A Demon Doll is a reward item in the game, specifically obtained by completing the Tusken Valuables collection. It is categorized as a collection reward and has a corresponding wiki page with additional information and images, including a picture of the Tusken doll. The item is also linked to the Tusken Valuables collection, providing context for its significance in the game. Overall, A Demon Doll serves as a notable achievement for players who complete the specified collection. &
+
+\textbf{LLM Summary: \cmark} \newline
+The Desert Demon Doll is a toy created by the Tusken Raiders on the planet Tatooine. It is a notable part of Tusken Raider culture and is also classified as a toy and merchandise in the Star Wars universe. \\
+\hline
+
+\textbf{Node + Relation: \xmark} \newline
+A\_Demon\_Doll \newline
+abstract: This is the reward for completing the Tusken Valuables collection. \newline
+altLabel: A Demon Doll \newline
+label: A Demon Doll \newline
+subject: Category:Collection\_rewards \newline
+type: Thing &
+
+\textbf{Node + Relation: \xmark} \newline
+Desert\_Demon\_Doll \newline
+abstract: A Desert Demon Doll was a toy made by Tusken Raiders on Tatooine. \newline
+altLabel: [Desert demon doll, Desert Demon Doll] \newline
+label: Desert Demon Doll \newline
+subject: [Category:Tusken\_Raider\_culture, Category:Toys\_and\_merchandise] \newline
+type: swgwiki \\
+\hline
+\end{tabular}
+\caption{Comparison of gold pairs found by LLM summary but not by Node + Relation representations using LLM Selection.}
+\label{tab:example-comparison}
+\end{table*}
+
+\section{Prompts Used for Top10 Selection}
+All prompts formatted the candidate entities between "<EXAMPLE></EXAMPLE>" XML tags, while adding an "ID:\{\}" line to each candidate that the LLM can refer to.  
+
+\subsection{Normal}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+TASK: You will be given a description of an anchor entity and a list of candidate entities, all formatted with <EXAMPLE> tags. Your task is to:
+- Identify the candidate entity that is the same as the anchor entity.
+- Return the ID number of the matching candidate entity.
+- If none of the candidates match the anchor entity, return -1.
+- Answer with the ID (or -1) only, no explanations
+###
+<ANCHOR>
+{anchor}
+</ANCHOR>
+###
+{candidates strings}
+###
+Answer:
+\end{lstlisting}
+
+\subsection{Strict}
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize]
+TASK: You will be given a description of an anchor entity and a list of candidate entities, all formatted with <EXAMPLE> tags. Your task is to:
+- Identify the candidate entity that is the same as the anchor entity.
+- Return the ID number of the matching candidate entity. The selected Candidate MUST BE the same as the Anchor entity. 
+- If none of the candidates match the anchor entity, return -1.
+- Answer with the ID (or -1) only, no explanations
+###
+<ANCHOR>
+{anchor}
+</ANCHOR>
+###
+{candidates strings}
+###
+Answer:
+\end{lstlisting}
 
 2. Deduplication table
 

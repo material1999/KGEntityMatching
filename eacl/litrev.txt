@@ -1,0 +1,131 @@
+i want a literature review using the following articles
+i want it in latex format as part of my already existing article
+i want to start of with introducing knowledge graphs (kgs), then move on to the actual dataset we are considering
+show some examples why aligning kgs is crucial
+show that this is not graphrag, since the graph is already present
+i want to point out differences between ontology and kg entity matching (same size whole networks vs different kgs in size and structure)
+then i want to introduce the key articles from the past few years
+then talk about llm context/prompt engineering, fine tuning
+
+############################
+##### KGs ARE EMERGING #####
+############################
+
+Knowledge Graphs: Opportunities and Challenges (2023) ✅
+https://link.springer.com/article/10.1007/s10462-023-10465-9
+
+################
+##### OAEI #####
+################
+
+The Knowledge Graph Track at OAEI (2022) ✅
+https://link.springer.com/chapter/10.1007/978-3-030-49461-2_20
+
+#################################
+##### MATCHING APPLICATIONS #####
+#################################
+
+Structurally Mapping Healthcare Data to HL7 FHIR through Ontology Alignment (2019) ✅
+https://link.springer.com/article/10.1007/s10916-019-1183-y
+
+Matching Multiple Ontologies to Build a Knowledge Graph for Personalized Medicine (2022) ✅
+https://link.springer.com/chapter/10.1007/978-3-031-06981-9_27
+
+Seamless interoperability in logistics by ontology alignment (2020) ✅
+https://journals.open.tudelft.nl/jscms/article/view/5444
+
+####################
+##### GRAPHRAG #####
+####################
+
+A Comprehensive Survey of Retrieval-Augmented Generation (RAG): Evolution, Current Landscape and Future Directions (2024) ✅
+https://arxiv.org/abs/2410.12837
+
+From Local to Global: A Graph RAG Approach to Query-Focused Summarization (2024) ✅
+https://arxiv.org/abs/2404.16130
+
+#################################
+##### ALIGNMENT VS MATCHING #####
+#################################
+
+A comprehensive survey of entity alignment for knowledge graphs (2021) ✅
+https://www.sciencedirect.com/science/article/pii/S2666651021000036
+
+Deep Entity Matching: Challenges and Opportunities (2021) ✅
+https://dl.acm.org/doi/abs/10.1145/3431816
+
+Sentence-BERT: Sentence Embeddings using Siamese BERT-Networks (2019) ✅
+https://arxiv.org/abs/1908.10084
+
+#####################################
+##### ONTOLOGY/ENTITY ALIGNMENT #####
+#####################################
+
+BERTMap: A BERT-Based Ontology Alignment System (2022) ✅
+https://ojs.aaai.org/index.php/AAAI/article/view/20510
+
+A survey: knowledge graph entity alignment research based on graph embedding (2024) ✅
+https://link.springer.com/article/10.1007/s10462-024-10866-4
+
+Exploring Large Language Models for Ontology Alignment (2023) ✅
+https://arxiv.org/abs/2309.07172
+
+LLMs4OM: Matching Ontologies with Large Language Models (2024) ✅
+https://arxiv.org/abs/2404.10317
+
+Towards Complex Ontology Alignment Using Large Language Models (2025) ✅
+https://link.springer.com/chapter/10.1007/978-3-031-81221-7_2
+
+Background knowledge in ontology matching: A survey (2024) ✅
+https://journals.sagepub.com/doi/full/10.3233/SW-223085
+
+##############################
+##### KG ENTITY MATCHING #####
+##############################
+
+Using ChatGPT for Entity Matching (2023) ✅
+https://link.springer.com/chapter/10.1007/978-3-031-42941-5_20
+
+Effective entity matching with transformers (2023) ✅
+https://link.springer.com/article/10.1007/s00778-023-00779-z
+
+Matching Knowledge Graphs in Entity Embedding Spaces: An Experimental Study (2023) ✅
+https://ieeexplore.ieee.org/abstract/document/10114983
+
+A Novel Approach to Optimize Large Language Models for Named Entity Matching with Monte Carlo Tree Search (2024) ✅
+https://www.authorea.com/doi/full/10.22541/au.172659950.06571592
+
+AnyMatch -- Efficient Zero-Shot Entity Matching with a Small Language Model (2024) ✅
+https://arxiv.org/abs/2409.04073
+
+Entity Matching using Large Language Models (2024) ✅
+https://arxiv.org/abs/2310.11244
+
+Match, Compare, or Select? An Investigation of Large Language Models for Entity Matching (2024) ✅
+https://arxiv.org/abs/2405.16884
+
+Unlocking the Power of Large Language Models for Entity Alignment (2024) ✅
+https://arxiv.org/abs/2402.15048
+
+Fine-Tuning Large Language Models for Entity Matching (2025) ✅
+https://ieeexplore.ieee.org/abstract/document/11107461
+
+###################################
+##### LLM CONTEXT ENGINEERING #####
+###################################
+
+Enhancing LLM’s Cognition via Structurization (2024) ✅
+https://proceedings.neurips.cc/paper_files/paper/2024/hash/f169ec4d47933ea4896b994af8ff4f17-Abstract-Conference.html
+
+A Survey of Context Engineering for Large Language Models (2025) ✅
+https://arxiv.org/abs/2507.13334
+
+#############################
+##### ALMOST WHAT WE DO #####
+#############################
+
+Two Heads Are Better Than One: Integrating Knowledge from Knowledge Graphs and Large Language Models for Entity Alignment (2024) ✅
+https://arxiv.org/abs/2401.16960
+
+EasyEA: Large Language Model is All You Need in Entity Alignment Between Knowledge Graphs (2025) ✅
+https://aclanthology.org/2025.findings-acl.1080/
